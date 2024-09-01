@@ -36,17 +36,18 @@ func ToBookingsResponse(bookings []entity.Booking) []BookingResponse {
 }
 
 type BookingResponseV2 struct {
-	ID              int                  `json:"id"`
-	Customer        CustomerResponse     `json:"customer"`
-	Car             CarResponse          `json:"car"`
-	StartRent       time.Time            `json:"start_rent"`
-	EndRent         time.Time            `json:"end_rent"`
-	TotalCost       float64              `json:"total_cost"`
-	Finished        bool                 `json:"finished"`
-	Discount        float64              `json:"discount"`
-	BookingType     *BookingTypeResponse `json:"booking_type"`
-	Driver          *DriverResponse      `json:"driver"`
-	TotalDriverCost float64              `json:"total_driver_cost"`
+	ID              int                      `json:"id"`
+	Customer        CustomerResponse         `json:"customer"`
+	Car             CarResponse              `json:"car"`
+	StartRent       time.Time                `json:"start_rent"`
+	EndRent         time.Time                `json:"end_rent"`
+	TotalCost       float64                  `json:"total_cost"`
+	Finished        bool                     `json:"finished"`
+	Discount        float64                  `json:"discount"`
+	BookingType     *BookingTypeResponse     `json:"booking_type"`
+	Driver          *DriverResponse          `json:"driver"`
+	TotalDriverCost float64                  `json:"total_driver_cost"`
+	DriverIncentive *DriverIncentiveResponse `json:"driver_incentive"`
 }
 
 func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
@@ -72,6 +73,12 @@ func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
 			return nil
 		}(),
 		TotalDriverCost: booking.TotalDriverCost,
+		DriverIncentive: func() *DriverIncentiveResponse {
+			if booking.DriverIncentive != nil {
+				return ToDriverIncentiveResponse(booking.DriverIncentive)
+			}
+			return nil
+		}(),
 	}
 }
 

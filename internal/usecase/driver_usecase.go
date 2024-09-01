@@ -44,6 +44,7 @@ func (uc *DriverUsecase) Create(ctx context.Context, request *model.CreateDriver
 		Name:        request.Name,
 		NIK:         request.NIK,
 		PhoneNumber: request.PhoneNumber,
+		DailyCost:   request.DailyCost,
 	}
 
 	if err := uc.repository.Create(tx, driver); err != nil {
