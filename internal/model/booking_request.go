@@ -7,8 +7,17 @@ type CreateBookingRequest struct {
 	CarID      int       `json:"car_id" binding:"required,gt=0"`
 	StartRent  time.Time `json:"start_rent" binding:"required"`
 	EndRent    time.Time `json:"end_rent" binding:"required,gtfield=StartRent"`
-	TotalCost  float64   `json:"total_cost" binding:"required"`
 	Finished   bool      `json:"finished" binding:"required"`
+}
+
+type CreateBookingRequestV2 struct {
+	CustomerID    int       `json:"customer_id" binding:"required,gt=0"`
+	CarID         int       `json:"car_id" binding:"required,gt=0"`
+	StartRent     time.Time `json:"start_rent" binding:"required"`
+	EndRent       time.Time `json:"end_rent" binding:"required,gtfield=StartRent"`
+	Finished      bool      `json:"finished" binding:"required"`
+	BookingTypeID int       `json:"booking_type_id" binding:"required,gt=0"`
+	DriverID      *int      `json:"driver_id" binding:"omitempty,gt=0"`
 }
 
 type GetBookingRequest struct {
@@ -33,7 +42,6 @@ type UpdateBookingRequest struct {
 	CarID      *int       `json:"car_id" uri:"-" binding:"omitempty,gt=0"`
 	StartRent  *time.Time `json:"start_rent" uri:"-"`
 	EndRent    *time.Time `json:"end_rent" uri:"-" binding:"omitempty,gtfield=StartRent"`
-	TotalCost  *float64   `json:"total_cost" uri:"-"`
 	Finished   *bool      `json:"finished" uri:"-"`
 }
 

@@ -10,18 +10,18 @@ import (
 	"github.com/mnaufalhilmym/gotracing"
 )
 
-type BookingController struct {
-	usecase *usecase.BookingUsecase
+type DriverController struct {
+	usecase *usecase.DriverUsecase
 }
 
-func NewBookingController(uc *usecase.BookingUsecase) *BookingController {
-	return &BookingController{
+func NewDriverController(uc *usecase.DriverUsecase) *DriverController {
+	return &DriverController{
 		usecase: uc,
 	}
 }
 
-func (c *BookingController) Create(ctx *gin.Context) {
-	request := new(model.CreateBookingRequest)
+func (c *DriverController) Create(ctx *gin.Context) {
+	request := new(model.CreateDriverRequest)
 	if err := ctx.ShouldBindJSON(request); err != nil {
 		gotracing.Error("Failed to parse request", err)
 		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
@@ -37,25 +37,8 @@ func (c *BookingController) Create(ctx *gin.Context) {
 	model.ResponseCreated(ctx, response)
 }
 
-func (c *BookingController) CreateV2(ctx *gin.Context) {
-	request := new(model.CreateBookingRequestV2)
-	if err := ctx.ShouldBindJSON(request); err != nil {
-		gotracing.Error("Failed to parse request", err)
-		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
-		return
-	}
-
-	response, err := c.usecase.CreateV2(ctx.Request.Context(), request)
-	if err != nil {
-		model.ResponseError(ctx, err)
-		return
-	}
-
-	model.ResponseCreated(ctx, response)
-}
-
-func (c *BookingController) Get(ctx *gin.Context) {
-	request := new(model.GetBookingRequest)
+func (c *DriverController) Get(ctx *gin.Context) {
+	request := new(model.GetDriverRequest)
 	if err := ctx.ShouldBindUri(request); err != nil {
 		gotracing.Error("Failed to parse request", err)
 		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
@@ -71,25 +54,8 @@ func (c *BookingController) Get(ctx *gin.Context) {
 	model.ResponseOK(ctx, response)
 }
 
-func (c *BookingController) GetV2(ctx *gin.Context) {
-	request := new(model.GetBookingRequest)
-	if err := ctx.ShouldBindUri(request); err != nil {
-		gotracing.Error("Failed to parse request", err)
-		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
-		return
-	}
-
-	response, err := c.usecase.GetV2(ctx.Request.Context(), request)
-	if err != nil {
-		model.ResponseError(ctx, err)
-		return
-	}
-
-	model.ResponseOK(ctx, response)
-}
-
-func (c *BookingController) GetList(ctx *gin.Context) {
-	request := new(model.GetListBookingRequest)
+func (c *DriverController) GetList(ctx *gin.Context) {
+	request := new(model.GetListDriverRequest)
 	if err := ctx.ShouldBindQuery(request); err != nil {
 		gotracing.Error("Failed to parse request", err)
 		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
@@ -112,8 +78,8 @@ func (c *BookingController) GetList(ctx *gin.Context) {
 	model.ResponseOKPaginated(ctx, response, total, request.Page, request.Size)
 }
 
-func (c *BookingController) Update(ctx *gin.Context) {
-	request := new(model.UpdateBookingRequest)
+func (c *DriverController) Update(ctx *gin.Context) {
+	request := new(model.UpdateDriverRequest)
 	if err := ctx.ShouldBindUri(request); err != nil {
 		gotracing.Error("Failed to parse request", err)
 		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
@@ -134,8 +100,8 @@ func (c *BookingController) Update(ctx *gin.Context) {
 	model.ResponseOK(ctx, response)
 }
 
-func (c *BookingController) Delete(ctx *gin.Context) {
-	request := new(model.DeleteBookingRequest)
+func (c *DriverController) Delete(ctx *gin.Context) {
+	request := new(model.DeleteDriverRequest)
 	if err := ctx.ShouldBindUri(request); err != nil {
 		gotracing.Error("Failed to parse request", err)
 		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))

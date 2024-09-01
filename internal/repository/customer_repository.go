@@ -32,7 +32,7 @@ func (r *CustomerRepository) CheckIfNIKOrPhoneNumberExists(db *gorm.DB, nik stri
 	return count > 0, nil
 }
 
-func (r *CustomerRepository) SearchCustomers(db *gorm.DB, nik string, name string, phoneNumber string, page int, size int) ([]entity.Customer, int64, error) {
+func (r *CustomerRepository) Search(db *gorm.DB, nik string, name string, phoneNumber string, page int, size int) ([]entity.Customer, int64, error) {
 	var customers []entity.Customer
 	var total int64
 
@@ -41,7 +41,7 @@ func (r *CustomerRepository) SearchCustomers(db *gorm.DB, nik string, name strin
 		offset = (page - 1) * size
 	}
 
-	filter := r.filterCustomers(nik, name, phoneNumber)
+	filter := r.filter(nik, name, phoneNumber)
 
 	if err := db.Scopes(filter).Offset(offset).Limit(size).Find(&customers).Error; err != nil {
 		gotracing.Error("Failed to find entities from database", err)
@@ -56,7 +56,7 @@ func (r *CustomerRepository) SearchCustomers(db *gorm.DB, nik string, name strin
 	return customers, total, nil
 }
 
-func (*CustomerRepository) filterCustomers(nik string, name string, phoneNumber string) func(tx *gorm.DB) *gorm.DB {
+func (*CustomerRepository) filter(nik string, name string, phoneNumber string) func(tx *gorm.DB) *gorm.DB {
 	return func(tx *gorm.DB) *gorm.DB {
 		if nik != "" {
 			fNIK := "%" + nik + "%"
@@ -75,4 +75,14 @@ func (*CustomerRepository) filterCustomers(nik string, name string, phoneNumber 
 
 		return tx
 	}
+}
+
+func (r *CustomerRepository) LoadMembership(db *gorm.DB, customer *entity.Customer) error {
+	if customer.MembershipID != nil {
+		if err := db.Where("id = ?", *customer.MembershipID).First(&customer.Membership).Error; err != nil {
+			gotracing.Error("Failed to find entity from database", err)
+			return err
+		}
+	}
+	return nil
 }

@@ -16,25 +16,38 @@ type BootstrapConfig struct {
 
 func Bootstrap(conf BootstrapConfig) {
 	// Repository
+	membershipRepository := repository.NewMembershipRepository(conf.DB)
 	customerRepository := repository.NewCustomerRepository(conf.DB)
 	carRepository := repository.NewCarRepository(conf.DB)
+	bookingTypeRepository := repository.NewBookingTypeRepository(conf.DB)
+	driverRepository := repository.NewDriverRepository(conf.DB)
 	bookingRepository := repository.NewBookingRepository(conf.DB)
+	driverIncentiveRepository := repository.NewDriverIncentiveRepository(conf.DB)
 
 	// Usecase
-	customerUsecase := usecase.NewCustomerUsecase(conf.DB, customerRepository)
+	membershipUsecase := usecase.NewMembershipUsecase(conf.DB, membershipRepository)
+	customerUsecase := usecase.NewCustomerUsecase(conf.DB, customerRepository, membershipRepository)
 	carUsecase := usecase.NewCarUsecase(conf.DB, carRepository)
-	bookingUsecase := usecase.NewBookingUsecase(conf.DB, bookingRepository, customerRepository, carRepository)
+	bookingTypeUsecase := usecase.NewBookingTypeUsecase(conf.DB, bookingTypeRepository)
+	driverUsecase := usecase.NewDriverUsecase(conf.DB, driverRepository)
+	bookingUsecase := usecase.NewBookingUsecase(conf.DB, bookingRepository, customerRepository, carRepository, bookingTypeRepository, driverRepository, driverIncentiveRepository)
 
 	// Controller
+	membershipController := controller.NewMembershipController(membershipUsecase)
 	customerController := controller.NewCustomerController(customerUsecase)
 	carController := controller.NewCarController(carUsecase)
+	bookingTypeController := controller.NewBookingTypeController(bookingTypeUsecase)
+	driverController := controller.NewDriverController(driverUsecase)
 	bookingController := controller.NewBookingController(bookingUsecase)
 
 	routeConfig := controller.RouteConfig{
-		Router:             conf.Router,
-		CustomerController: customerController,
-		CarController:      carController,
-		BookingController:  bookingController,
+		Router:                conf.Router,
+		CustomerController:    customerController,
+		CarController:         carController,
+		BookingTypeController: bookingTypeController,
+		BookingController:     bookingController,
+		MembershipController:  membershipController,
+		DriverController:      driverController,
 	}
 
 	routeConfig.ConfigureRoutes()

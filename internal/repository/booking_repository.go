@@ -45,7 +45,7 @@ func (r *BookingRepository) LoadCar(db *gorm.DB, booking *entity.Booking) error 
 
 func (*BookingRepository) FindByIDPreload(db *gorm.DB, id int) (*entity.Booking, error) {
 	var entity *entity.Booking
-	if err := db.Joins("Customer").Joins("Car").Where("bookings.id = ?", id).First(&entity).Error; err != nil {
+	if err := db.Joins("Customer").Joins("Car").Joins("BookingType").Joins("LEFT JOIN drivers ON drivers.id = driver_id").Where("bookings.id = ?", id).First(&entity).Error; err != nil {
 		gotracing.Error("Failed to find entity from database", err)
 		return nil, err
 	}

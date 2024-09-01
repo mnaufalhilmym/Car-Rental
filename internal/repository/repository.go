@@ -39,3 +39,12 @@ func (*repository[T]) FindByID(db *gorm.DB, id int) (*T, error) {
 	}
 	return entity, nil
 }
+
+func (*repository[T]) FindAll(db *gorm.DB) ([]T, error) {
+	var entities []T
+	if err := db.Find(&entities).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return nil, err
+	}
+	return entities, nil
+}

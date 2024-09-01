@@ -14,17 +14,20 @@ import (
 )
 
 type CustomerUsecase struct {
-	db         *gorm.DB
-	repository *repository.CustomerRepository
+	db                   *gorm.DB
+	repository           *repository.CustomerRepository
+	membershipRepository *repository.MembershipRepository
 }
 
 func NewCustomerUsecase(
 	db *gorm.DB,
 	repository *repository.CustomerRepository,
+	membershipRepository *repository.MembershipRepository,
 ) *CustomerUsecase {
 	return &CustomerUsecase{
-		db:         db,
-		repository: repository,
+		db:                   db,
+		repository:           repository,
+		membershipRepository: membershipRepository,
 	}
 }
 
@@ -67,6 +70,12 @@ func (uc *CustomerUsecase) Get(ctx context.Context, request *model.GetCustomerRe
 		return nil, err
 	}
 
+	if customer.MembershipID != nil {
+		if err := uc.repository.LoadMembership(tx, customer); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		gotracing.Error("Failed to commit transaction", err)
 		return nil, err
@@ -79,7 +88,7 @@ func (uc *CustomerUsecase) GetList(ctx context.Context, request *model.GetListCu
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	customers, total, err := uc.repository.SearchCustomers(tx, request.NIK, request.Name, request.PhoneNumber, request.Page, request.Size)
+	customers, total, err := uc.repository.Search(tx, request.NIK, request.Name, request.PhoneNumber, request.Page, request.Size)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -109,6 +118,14 @@ func (uc *CustomerUsecase) Update(ctx context.Context, request *model.UpdateCust
 	}
 	if request.PhoneNumber != nil {
 		customer.PhoneNumber = *request.PhoneNumber
+	}
+	if request.MembershipID != nil {
+		membership, err := uc.membershipRepository.FindByID(tx, *request.MembershipID)
+		if err != nil {
+			return nil, err
+		}
+		customer.MembershipID = &membership.ID
+		customer.Membership = membership
 	}
 
 	if err := uc.repository.Update(tx, customer); err != nil {

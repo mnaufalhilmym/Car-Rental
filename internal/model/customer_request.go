@@ -1,9 +1,10 @@
 package model
 
 type CreateCustomerRequest struct {
-	Name        string `json:"name" binding:"required,gt=0"`
-	NIK         string `json:"nik" binding:"required,numeric,gt=10"`
-	PhoneNumber string `json:"phone_number" binding:"required,phone_number"`
+	Name         string `json:"name" binding:"required,gt=0"`
+	NIK          string `json:"nik" binding:"required,numeric,gt=10"`
+	PhoneNumber  string `json:"phone_number" binding:"required,phone_number"`
+	MembershipID *int   `json:"membership_id" binding:"omitempty,gt=0"`
 }
 
 type GetCustomerRequest struct {
@@ -19,10 +20,11 @@ type GetListCustomerRequest struct {
 }
 
 type UpdateCustomerRequest struct {
-	ID          int     `json:"-" uri:"id" binding:"required,gt=0"`
-	Name        *string `json:"name" uri:"-" binding:"omitempty,gt=0"`
-	NIK         *string `json:"nik" uri:"-" binding:"omitempty,numeric,gt=10"`
-	PhoneNumber *string `json:"phone_number" uri:"-" binding:"omitempty,phone_number"`
+	ID           int     `json:"-" uri:"id" binding:"required,gt=0"`
+	Name         *string `json:"name" uri:"-" binding:"omitempty,gt=0"`
+	NIK          *string `json:"nik" uri:"-" binding:"omitempty,numeric,gt=10"`
+	PhoneNumber  *string `json:"phone_number" uri:"-" binding:"omitempty,phone_number"`
+	MembershipID *int    `json:"membership_id" uri:"-" binding:"omitempty,gt=0"`
 }
 
 type DeleteCustomerRequest struct {

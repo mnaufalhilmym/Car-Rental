@@ -3,10 +3,11 @@ package model
 import "carrental/internal/entity"
 
 type CustomerResponse struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	NIK         string `json:"nik"`
-	PhoneNumber string `json:"phone_number"`
+	ID          int                 `json:"id"`
+	Name        string              `json:"name"`
+	NIK         string              `json:"nik"`
+	PhoneNumber string              `json:"phone_number"`
+	Membership  *MembershipResponse `json:"membership,omitempty"`
 }
 
 func ToCustomerResponse(customer *entity.Customer) *CustomerResponse {
@@ -15,6 +16,12 @@ func ToCustomerResponse(customer *entity.Customer) *CustomerResponse {
 		Name:        customer.Name,
 		NIK:         customer.NIK,
 		PhoneNumber: customer.PhoneNumber,
+		Membership: func() *MembershipResponse {
+			if customer.Membership != nil {
+				return ToMembershipResponse(customer.Membership)
+			}
+			return nil
+		}(),
 	}
 }
 
