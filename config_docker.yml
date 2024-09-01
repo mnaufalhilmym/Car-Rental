@@ -11,7 +11,7 @@ log:
 
 db:
   host: postgres
-  port: 6543
+  port: 5432
   user: carrental_user
   password: PaF7UybfCHdEnF65
   name: carrental_db
