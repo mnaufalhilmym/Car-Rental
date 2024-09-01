@@ -18,8 +18,8 @@ type BookingResponse struct {
 func ToBookingResponse(booking *entity.Booking) *BookingResponse {
 	return &BookingResponse{
 		ID:        booking.ID,
-		Customer:  CustomerResponse(booking.Customer),
-		Car:       CarResponse(booking.Car),
+		Customer:  *ToCustomerResponse(&booking.Customer),
+		Car:       *ToCarResponse(&booking.Car),
 		StartRent: booking.StartRent,
 		EndRent:   booking.EndRent,
 		TotalCost: booking.TotalCost,

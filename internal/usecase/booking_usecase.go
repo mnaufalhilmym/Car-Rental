@@ -8,14 +8,12 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
 
 type BookingUsecase struct {
 	db                 *gorm.DB
-	validator          *validator.Validate
 	repository         *repository.BookingRepository
 	customerRepository *repository.CustomerRepository
 	carRepository      *repository.CarRepository
@@ -23,14 +21,12 @@ type BookingUsecase struct {
 
 func NewBookingUsecase(
 	db *gorm.DB,
-	validator *validator.Validate,
 	repository *repository.BookingRepository,
 	customerRepository *repository.CustomerRepository,
 	carRepository *repository.CarRepository,
 ) *BookingUsecase {
 	return &BookingUsecase{
 		db:                 db,
-		validator:          validator,
 		repository:         repository,
 		customerRepository: customerRepository,
 		carRepository:      carRepository,
@@ -41,17 +37,12 @@ func (uc *BookingUsecase) Create(ctx context.Context, request *model.CreateBooki
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
-
 	customer, err := uc.customerRepository.FindByID(tx, request.CustomerID)
 	if err != nil {
 		return nil, err
 	}
 
-	car, err := uc.customerRepository.FindByID(tx, request.CarID)
+	car, err := uc.carRepository.FindByID(tx, request.CarID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +54,8 @@ func (uc *BookingUsecase) Create(ctx context.Context, request *model.CreateBooki
 		EndRent:    request.EndRent,
 		TotalCost:  request.TotalCost,
 		Finished:   request.Finished,
+		Customer:   *customer,
+		Car:        *car,
 	}
 
 	if err := uc.repository.Create(tx, booking); err != nil {
@@ -81,11 +74,6 @@ func (uc *BookingUsecase) Get(ctx context.Context, request *model.GetBookingRequ
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
-
 	booking, err := uc.repository.FindByIDPreload(tx, request.ID)
 	if err != nil {
 		return nil, err
@@ -102,11 +90,6 @@ func (uc *BookingUsecase) Get(ctx context.Context, request *model.GetBookingRequ
 func (uc *BookingUsecase) GetList(ctx context.Context, request *model.GetListBookingRequest) ([]model.BookingResponse, int64, error) {
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
-
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, 0, err
-	}
 
 	offsetTime, err := util.ParseTimezone(request.Timezone)
 	if err != nil {
@@ -141,12 +124,7 @@ func (uc *BookingUsecase) Update(ctx context.Context, request *model.UpdateBooki
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
-
-	booking, err := uc.repository.FindByID(tx, request.ID)
+	booking, err := uc.repository.FindByIDPreload(tx, request.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -193,11 +171,6 @@ func (uc *BookingUsecase) Update(ctx context.Context, request *model.UpdateBooki
 func (uc *BookingUsecase) Delete(ctx context.Context, request *model.DeleteBookingRequest) error {
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
-
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return err
-	}
 
 	booking, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {

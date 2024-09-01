@@ -24,13 +24,13 @@ func main() {
 		conf.GetInt("db.pool.max"),
 		conf.GetInt("db.pool.lifetime"),
 	)
-	validator := config.NewValidator(conf.GetString("validator.phone_number"))
 	router := config.NewGin(conf.GetString("app.mode"))
 
+	config.RegisterCustomValidation(conf.GetString("validator.phone_number"))
+
 	config.Bootstrap(config.BootstrapConfig{
-		DB:        db,
-		Validator: validator,
-		Router:    router,
+		DB:     db,
+		Router: router,
 	})
 
 	if err := router.Run(conf.GetString("web.address")); err != nil {

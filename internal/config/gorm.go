@@ -22,13 +22,18 @@ func NewDatabase(
 ) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s TimeZone=Asia/Jakarta", host, port, user, password, name)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.New(&gormTracingWriter{}, logger.Config{
-			SlowThreshold:        5 * time.Second,
-			ParameterizedQueries: true,
-			LogLevel:             logger.Info,
+	db, err := gorm.Open(
+		postgres.New(postgres.Config{
+			DSN:                  dsn,
+			PreferSimpleProtocol: true,
 		}),
-	})
+		&gorm.Config{
+			Logger: logger.New(&gormTracingWriter{}, logger.Config{
+				SlowThreshold:        5 * time.Second,
+				ParameterizedQueries: true,
+				LogLevel:             logger.Info,
+			}),
+		})
 	if err != nil {
 		panic(fmt.Errorf("failed to connect to database: %w", err))
 	}

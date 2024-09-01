@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
@@ -17,8 +18,8 @@ type BookingRepository struct {
 }
 
 func NewBookingRepository(db *gorm.DB) *BookingRepository {
-	if err := db.AutoMigrate(&entity.Booking{}); err != nil {
-		if err.Error() != fmt.Sprintf(`ERROR: relation "%s" already exists (SQLSTATE 42P07)`, (&entity.Booking{}).TableName()) {
+	if err := db.Migrator().CreateTable(&entity.Booking{}); err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); !ok || pgErr.Code != "42P07" {
 			panic(fmt.Errorf("failed to migrate entity: %w", err))
 		}
 	}
@@ -44,7 +45,7 @@ func (r *BookingRepository) LoadCar(db *gorm.DB, booking *entity.Booking) error 
 
 func (*BookingRepository) FindByIDPreload(db *gorm.DB, id int) (*entity.Booking, error) {
 	var entity *entity.Booking
-	if err := db.Joins("Customer").Joins("Car").Where("id = ?", id).First(entity).Error; err != nil {
+	if err := db.Joins("Customer").Joins("Car").Where("bookings.id = ?", id).First(&entity).Error; err != nil {
 		gotracing.Error("Failed to find entity from database", err)
 		return nil, err
 	}

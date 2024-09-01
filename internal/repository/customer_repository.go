@@ -4,6 +4,7 @@ import (
 	"carrental/internal/entity"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
@@ -13,13 +14,22 @@ type CustomerRepository struct {
 }
 
 func NewCustomerRepository(db *gorm.DB) *CustomerRepository {
-	if err := db.AutoMigrate(&entity.Customer{}); err != nil {
-		if err.Error() != fmt.Sprintf(`ERROR: relation "%s" already exists (SQLSTATE 42P07)`, (&entity.Customer{}).TableName()) {
+	if err := db.Migrator().CreateTable(&entity.Customer{}); err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); !ok || pgErr.Code != "42P07" {
 			panic(fmt.Errorf("failed to migrate entity: %w", err))
 		}
 	}
 
 	return &CustomerRepository{}
+}
+
+func (r *CustomerRepository) CheckIfNIKOrPhoneNumberExists(db *gorm.DB, nik string, phoneNumber string) (bool, error) {
+	var count int64
+	if err := db.Model(&entity.Customer{}).Where("nik = ? OR phone_number = ?", nik, phoneNumber).Count(&count).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *CustomerRepository) SearchCustomers(db *gorm.DB, nik string, name string, phoneNumber string, page int, size int) ([]entity.Customer, int64, error) {

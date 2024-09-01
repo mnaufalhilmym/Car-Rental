@@ -3,18 +3,18 @@ package config
 import (
 	"regexp"
 
+	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
 
 var phoneNumberRegexp *regexp.Regexp
 
-func NewValidator(phoneNumberPattern string) *validator.Validate {
+func RegisterCustomValidation(phoneNumberPattern string) {
 	phoneNumberRegexp = regexp.MustCompile(phoneNumberPattern)
 
-	v := validator.New(validator.WithRequiredStructEnabled())
-	v.RegisterValidation("phone_number", validatePhoneNumber)
-
-	return v
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("phone_number", validatePhoneNumber)
+	}
 }
 
 func validatePhoneNumber(fl validator.FieldLevel) bool {

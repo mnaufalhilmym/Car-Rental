@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
@@ -16,13 +17,22 @@ type CarRepository struct {
 }
 
 func NewCarRepository(db *gorm.DB) *CarRepository {
-	if err := db.AutoMigrate(&entity.Car{}); err != nil {
-		if err.Error() != fmt.Sprintf(`ERROR: relation "%s" already exists (SQLSTATE 42P07)`, (&entity.Car{}).TableName()) {
+	if err := db.Migrator().CreateTable(&entity.Car{}); err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); !ok || pgErr.Code != "42P07" {
 			panic(fmt.Errorf("failed to migrate entity: %w", err))
 		}
 	}
 
 	return &CarRepository{}
+}
+
+func (r *CarRepository) CheckIfNameInsensitiveExists(db *gorm.DB, name string) (bool, error) {
+	var count int64
+	if err := db.Model(&entity.Car{}).Where("LOWER(name) = LOWER(?)", name).Count(&count).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *CarRepository) SearchCars(

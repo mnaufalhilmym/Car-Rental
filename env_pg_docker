@@ -1,0 +1,3 @@
+POSTGRES_USER=carrental_user
+POSTGRES_PASSWORD=PaF7UybfCHdEnF65
+POSTGRES_DB=carrental_db

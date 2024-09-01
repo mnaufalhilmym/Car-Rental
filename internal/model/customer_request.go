@@ -1,30 +1,30 @@
 package model
 
 type CreateCustomerRequest struct {
-	Name        string `json:"name" validate:"required,gt=0"`
-	NIK         string `json:"nik" validate:"required,numeric,gt=10"`
-	PhoneNumber string `json:"phone_number" validate:"required,phone_number"`
+	Name        string `json:"name" binding:"required,gt=0"`
+	NIK         string `json:"nik" binding:"required,numeric,gt=10"`
+	PhoneNumber string `json:"phone_number" binding:"required,phone_number"`
 }
 
 type GetCustomerRequest struct {
-	ID int `validate:"required,gt=0"`
+	ID int `uri:"id" binding:"required,gt=0"`
 }
 
 type GetListCustomerRequest struct {
 	paginationRequest
 
-	Name        string
-	NIK         string
-	PhoneNumber string
+	Name        string `form:"name"`
+	NIK         string `form:"nik"`
+	PhoneNumber string `form:"phone_number"`
 }
 
 type UpdateCustomerRequest struct {
-	ID          int     `json:"-" validate:"required,gt=0"`
-	Name        *string `json:"name" validate:"omitempty,gt=0"`
-	NIK         *string `json:"nik" validate:"numeric,gt=10"`
-	PhoneNumber *string `json:"phone_number" validate:"phone_number"`
+	ID          int     `json:"-" uri:"id" binding:"required,gt=0"`
+	Name        *string `json:"name" uri:"-" binding:"omitempty,gt=0"`
+	NIK         *string `json:"nik" uri:"-" binding:"omitempty,numeric,gt=10"`
+	PhoneNumber *string `json:"phone_number" uri:"-" binding:"omitempty,phone_number"`
 }
 
 type DeleteCustomerRequest struct {
-	ID int `validate:"required,gt=0"`
+	ID int `uri:"id" binding:"required,gt=0"`
 }

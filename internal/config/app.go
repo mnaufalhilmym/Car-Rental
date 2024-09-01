@@ -6,14 +6,12 @@ import (
 	"carrental/internal/usecase"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 )
 
 type BootstrapConfig struct {
-	DB        *gorm.DB
-	Validator *validator.Validate
-	Router    *gin.Engine
+	DB     *gorm.DB
+	Router *gin.Engine
 }
 
 func Bootstrap(conf BootstrapConfig) {
@@ -23,9 +21,9 @@ func Bootstrap(conf BootstrapConfig) {
 	bookingRepository := repository.NewBookingRepository(conf.DB)
 
 	// Usecase
-	customerUsecase := usecase.NewCustomerUsecase(conf.DB, conf.Validator, customerRepository)
-	carUsecase := usecase.NewCarUsecase(conf.DB, conf.Validator, carRepository)
-	bookingUsecase := usecase.NewBookingUsecase(conf.DB, conf.Validator, bookingRepository, customerRepository, carRepository)
+	customerUsecase := usecase.NewCustomerUsecase(conf.DB, customerRepository)
+	carUsecase := usecase.NewCarUsecase(conf.DB, carRepository)
+	bookingUsecase := usecase.NewBookingUsecase(conf.DB, bookingRepository, customerRepository, carRepository)
 
 	// Controller
 	customerController := controller.NewCustomerController(customerUsecase)

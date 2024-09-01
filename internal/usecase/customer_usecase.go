@@ -2,30 +2,28 @@ package usecase
 
 import (
 	"carrental/internal/entity"
+	apperror "carrental/internal/error"
 	"carrental/internal/model"
 	"carrental/internal/repository"
 	"context"
 	"database/sql"
+	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
 
 type CustomerUsecase struct {
 	db         *gorm.DB
-	validator  *validator.Validate
 	repository *repository.CustomerRepository
 }
 
 func NewCustomerUsecase(
 	db *gorm.DB,
-	validator *validator.Validate,
 	repository *repository.CustomerRepository,
 ) *CustomerUsecase {
 	return &CustomerUsecase{
 		db:         db,
-		validator:  validator,
 		repository: repository,
 	}
 }
@@ -34,9 +32,12 @@ func (uc *CustomerUsecase) Create(ctx context.Context, request *model.CreateCust
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
+	exists, err := uc.repository.CheckIfNIKOrPhoneNumberExists(tx, request.NIK, request.PhoneNumber)
+	if err != nil {
 		return nil, err
+	}
+	if exists {
+		return nil, apperror.BadRequest(fmt.Errorf(`customer with NIK "%s" or phone number "%s" already exists`, request.NIK, request.PhoneNumber))
 	}
 
 	customer := &entity.Customer{
@@ -61,11 +62,6 @@ func (uc *CustomerUsecase) Get(ctx context.Context, request *model.GetCustomerRe
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
-
 	customer, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {
 		return nil, err
@@ -83,11 +79,6 @@ func (uc *CustomerUsecase) GetList(ctx context.Context, request *model.GetListCu
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, 0, err
-	}
-
 	customers, total, err := uc.repository.SearchCustomers(tx, request.NIK, request.Name, request.PhoneNumber, request.Page, request.Size)
 	if err != nil {
 		return nil, 0, err
@@ -104,11 +95,6 @@ func (uc *CustomerUsecase) GetList(ctx context.Context, request *model.GetListCu
 func (uc *CustomerUsecase) Update(ctx context.Context, request *model.UpdateCustomerRequest) (*model.CustomerResponse, error) {
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
-
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
 
 	customer, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {
@@ -140,11 +126,6 @@ func (uc *CustomerUsecase) Update(ctx context.Context, request *model.UpdateCust
 func (uc *CustomerUsecase) Delete(ctx context.Context, request *model.DeleteCustomerRequest) error {
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
-
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return err
-	}
 
 	customer, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {

@@ -2,15 +2,16 @@ package model
 
 import (
 	apperror "carrental/internal/error"
+	"math"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type response[T any] struct {
-	Data       T           `json:"data,omitempty"`
-	Pagination *pagination `json:"pagination,omitempty"`
 	Error      string      `json:"error,omitempty"`
+	Pagination *pagination `json:"pagination,omitempty"`
+	Data       T           `json:"data,omitempty"`
 }
 
 type pagination struct {
@@ -23,6 +24,24 @@ type pagination struct {
 func ResponseCreated[T any](ctx *gin.Context, data T) {
 	ctx.JSON(http.StatusCreated, response[T]{
 		Data: data,
+	})
+}
+
+func ResponseOK[T any](ctx *gin.Context, data T) {
+	ctx.JSON(http.StatusOK, response[T]{
+		Data: data,
+	})
+}
+
+func ResponseOKPaginated[T any](ctx *gin.Context, data []T, totalItem int64, page int, size int) {
+	ctx.JSON(http.StatusOK, response[[]T]{
+		Data: data,
+		Pagination: &pagination{
+			Page:      page,
+			Size:      size,
+			TotalItem: totalItem,
+			TotalPage: int64(math.Ceil(float64(totalItem) / float64(size))),
+		},
 	})
 }
 

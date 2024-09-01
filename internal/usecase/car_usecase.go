@@ -2,30 +2,28 @@ package usecase
 
 import (
 	"carrental/internal/entity"
+	apperror "carrental/internal/error"
 	"carrental/internal/model"
 	"carrental/internal/repository"
 	"context"
 	"database/sql"
+	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
 
 type CarUsecase struct {
 	db         *gorm.DB
-	validator  *validator.Validate
 	repository *repository.CarRepository
 }
 
 func NewCarUsecase(
 	db *gorm.DB,
-	validator *validator.Validate,
 	repository *repository.CarRepository,
 ) *CarUsecase {
 	return &CarUsecase{
 		db:         db,
-		validator:  validator,
 		repository: repository,
 	}
 }
@@ -34,9 +32,12 @@ func (uc *CarUsecase) Create(ctx context.Context, request *model.CreateCarReques
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
+	exists, err := uc.repository.CheckIfNameInsensitiveExists(tx, request.Name)
+	if err != nil {
 		return nil, err
+	}
+	if exists {
+		return nil, apperror.BadRequest(fmt.Errorf(`car with name "%s" already exists`, request.Name))
 	}
 
 	car := &entity.Car{
@@ -61,11 +62,6 @@ func (uc *CarUsecase) Get(ctx context.Context, request *model.GetCarRequest) (*m
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
-
 	car, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {
 		return nil, err
@@ -83,11 +79,6 @@ func (uc *CarUsecase) GetList(ctx context.Context, request *model.GetListCarRequ
 	tx := uc.db.WithContext(ctx).Begin(&sql.TxOptions{ReadOnly: true})
 	defer tx.Rollback()
 
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, 0, err
-	}
-
 	cars, total, err := uc.repository.SearchCars(tx, request.Name, request.Stock, request.DailyRent, request.Page, request.Size)
 	if err != nil {
 		return nil, 0, err
@@ -104,11 +95,6 @@ func (uc *CarUsecase) GetList(ctx context.Context, request *model.GetListCarRequ
 func (uc *CarUsecase) Update(ctx context.Context, request *model.UpdateCarRequest) (*model.CarResponse, error) {
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
-
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return nil, err
-	}
 
 	car, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {
@@ -140,11 +126,6 @@ func (uc *CarUsecase) Update(ctx context.Context, request *model.UpdateCarReques
 func (uc *CarUsecase) Delete(ctx context.Context, request *model.DeleteCarRequest) error {
 	tx := uc.db.WithContext(ctx).Begin()
 	defer tx.Rollback()
-
-	if err := uc.validator.Struct(request); err != nil {
-		gotracing.Error("Failed to validate request", err)
-		return err
-	}
 
 	car, err := uc.repository.FindByID(tx, request.ID)
 	if err != nil {
