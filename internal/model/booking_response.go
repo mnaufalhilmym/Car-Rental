@@ -36,20 +36,21 @@ func ToBookingsResponse(bookings []entity.Booking) []BookingResponse {
 }
 
 type BookingResponseV2 struct {
-	ID              int                  `json:"id"`
-	Customer        CustomerResponse     `json:"customer"`
-	Car             CarResponse          `json:"car"`
-	StartRent       time.Time            `json:"start_rent"`
-	EndRent         time.Time            `json:"end_rent"`
-	TotalCost       float64              `json:"total_cost"`
-	Finished        bool                 `json:"finished"`
-	Discount        float64              `json:"discount"`
-	BookingType     *BookingTypeResponse `json:"booking_type"`
-	Driver          *DriverResponse      `json:"driver"`
-	TotalDriverCost float64              `json:"total_driver_cost"`
+	ID              int                      `json:"id"`
+	Customer        CustomerResponse         `json:"customer"`
+	Car             CarResponse              `json:"car"`
+	StartRent       time.Time                `json:"start_rent"`
+	EndRent         time.Time                `json:"end_rent"`
+	TotalCost       float64                  `json:"total_cost"`
+	Finished        bool                     `json:"finished"`
+	Discount        float64                  `json:"discount"`
+	BookingType     *BookingTypeResponse     `json:"booking_type"`
+	Driver          *DriverResponse          `json:"driver"`
+	TotalDriverCost float64                  `json:"total_driver_cost"`
+	DriverIncentive *DriverIncentiveResponse `json:"driver_incentive"`
 }
 
-func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
+func ToBookingResponseV2(booking *entity.Booking, driverIncentive *entity.DriverIncentive) *BookingResponseV2 {
 	return &BookingResponseV2{
 		ID:        booking.ID,
 		Customer:  *ToCustomerResponse(&booking.Customer),
@@ -72,13 +73,19 @@ func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
 			return nil
 		}(),
 		TotalDriverCost: booking.TotalDriverCost,
+		DriverIncentive: func() *DriverIncentiveResponse {
+			if driverIncentive != nil {
+				return ToDriverIncentiveResponse(driverIncentive)
+			}
+			return nil
+		}(),
 	}
 }
 
 func ToBookingsResponseV2(bookings []entity.Booking) []BookingResponseV2 {
 	response := make([]BookingResponseV2, len(bookings))
 	for i, booking := range bookings {
-		response[i] = *ToBookingResponseV2(&booking)
+		response[i] = *ToBookingResponseV2(&booking, nil)
 	}
 	return response
 }

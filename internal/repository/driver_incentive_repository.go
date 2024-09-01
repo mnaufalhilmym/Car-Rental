@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/mnaufalhilmym/gotracing"
 	"gorm.io/gorm"
 )
 
@@ -20,4 +21,13 @@ func NewDriverIncentiveRepository(db *gorm.DB) *DriverIncentiveRepository {
 	}
 
 	return &DriverIncentiveRepository{}
+}
+
+func (*DriverIncentiveRepository) FindByBookingID(db *gorm.DB, bookingID int) (*entity.DriverIncentive, error) {
+	var entity *entity.DriverIncentive
+	if err := db.Where("booking_id = ?", bookingID).First(&entity).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return nil, err
+	}
+	return entity, nil
 }

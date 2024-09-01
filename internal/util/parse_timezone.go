@@ -6,18 +6,14 @@ import (
 	"github.com/mnaufalhilmym/gotracing"
 )
 
-func ParseTimezone(timezone string) (time.Duration, error) {
+func ParseTimezone(timezone string) (*time.Location, error) {
 	timezone = "UTC" + timezone
 
-	loc, err := time.LoadLocation(timezone)
+	location, err := time.LoadLocation(timezone)
 	if err != nil {
 		gotracing.Error("Invalid timezone", err)
-		return 0, err
+		return nil, err
 	}
 
-	refTime := time.Now().UTC()
-
-	_, offset := refTime.In(loc).Zone()
-
-	return time.Duration(offset) * time.Second, nil
+	return location, nil
 }

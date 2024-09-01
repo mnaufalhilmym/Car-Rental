@@ -6,7 +6,7 @@ type CreateBookingRequest struct {
 	CustomerID int       `json:"customer_id" binding:"required,gt=0"`
 	CarID      int       `json:"car_id" binding:"required,gt=0"`
 	StartRent  time.Time `json:"start_rent" binding:"required"`
-	EndRent    time.Time `json:"end_rent" binding:"required,gtfield=StartRent"`
+	EndRent    time.Time `json:"end_rent" binding:"required,gtefield=StartRent"`
 	Finished   bool      `json:"finished" binding:"required"`
 }
 
@@ -14,7 +14,7 @@ type CreateBookingRequestV2 struct {
 	CustomerID    int       `json:"customer_id" binding:"required,gt=0"`
 	CarID         int       `json:"car_id" binding:"required,gt=0"`
 	StartRent     time.Time `json:"start_rent" binding:"required"`
-	EndRent       time.Time `json:"end_rent" binding:"required,gtfield=StartRent"`
+	EndRent       time.Time `json:"end_rent" binding:"required,gtefield=StartRent"`
 	Finished      bool      `json:"finished" binding:"required"`
 	BookingTypeID int       `json:"booking_type_id" binding:"required,gt=0"`
 	DriverID      *int      `json:"driver_id" binding:"omitempty,gt=0"`
@@ -41,8 +41,19 @@ type UpdateBookingRequest struct {
 	CustomerID *int       `json:"customer_id" uri:"-" binding:"omitempty,gt=0"`
 	CarID      *int       `json:"car_id" uri:"-" binding:"omitempty,gt=0"`
 	StartRent  *time.Time `json:"start_rent" uri:"-"`
-	EndRent    *time.Time `json:"end_rent" uri:"-" binding:"omitempty,gtfield=StartRent"`
+	EndRent    *time.Time `json:"end_rent" uri:"-" binding:"omitempty,gtefield=StartRent"`
 	Finished   *bool      `json:"finished" uri:"-"`
+}
+
+type UpdateBookingRequestV2 struct {
+	ID            int        `json:"-" uri:"id" binding:"required,gt=0"`
+	CustomerID    *int       `json:"customer_id" uri:"-" binding:"omitempty,gt=0"`
+	CarID         *int       `json:"car_id" uri:"-" binding:"omitempty,gt=0"`
+	StartRent     *time.Time `json:"start_rent" uri:"-"`
+	EndRent       *time.Time `json:"end_rent" uri:"-" binding:"omitempty,gtefield=StartRent"`
+	Finished      *bool      `json:"finished" uri:"-"`
+	BookingTypeID *int       `json:"booking_type_id" uri:"-" binding:"omitempty,gt=0"`
+	DriverID      *int       `json:"driver_id" uri:"-" binding:"omitempty,gt=0"`
 }
 
 type DeleteBookingRequest struct {

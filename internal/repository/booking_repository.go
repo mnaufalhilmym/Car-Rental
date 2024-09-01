@@ -43,9 +43,30 @@ func (r *BookingRepository) LoadCar(db *gorm.DB, booking *entity.Booking) error 
 	return nil
 }
 
+func (r *BookingRepository) LoadBookingType(db *gorm.DB, booking *entity.Booking) error {
+	if err := db.Where("id = ?", booking.BookingTypeID).First(&booking.BookingType).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return err
+	}
+	return nil
+}
+
+func (r *BookingRepository) LoadDriver(db *gorm.DB, booking *entity.Booking) error {
+	if err := db.Where("id = ?", booking.DriverID).First(&booking.Driver).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return err
+	}
+	return nil
+}
+
 func (*BookingRepository) FindByIDPreload(db *gorm.DB, id int) (*entity.Booking, error) {
 	var entity *entity.Booking
-	if err := db.Joins("Customer").Joins("Car").Joins("BookingType").Joins("LEFT JOIN drivers ON drivers.id = driver_id").Where("bookings.id = ?", id).First(&entity).Error; err != nil {
+	if err := db.
+		Joins("Customer").
+		Joins("Car").
+		Joins("BookingType").
+		Joins("Driver").
+		Where("bookings.id = ?", id).First(&entity).Error; err != nil {
 		gotracing.Error("Failed to find entity from database", err)
 		return nil, err
 	}
@@ -58,7 +79,7 @@ func (r *BookingRepository) SearchPreload(
 	carID int,
 	startRent string,
 	endRent string,
-	offsetTime time.Duration,
+	location *time.Location,
 	totalCost string,
 	finished *bool,
 	page int,
@@ -72,9 +93,14 @@ func (r *BookingRepository) SearchPreload(
 		offset = (page - 1) * size
 	}
 
-	filter := r.filter(customerID, carID, startRent, endRent, offsetTime, totalCost, finished)
+	filter := r.searchFilter(customerID, carID, startRent, endRent, location, totalCost, finished)
 
-	if err := db.Joins("Customer").Joins("Car").Scopes(filter).Offset(offset).Limit(size).Find(&bookings).Error; err != nil {
+	if err := db.
+		Joins("Customer").
+		Joins("Car").
+		Joins("BookingType").
+		Joins("Driver").
+		Scopes(filter).Offset(offset).Limit(size).Find(&bookings).Error; err != nil {
 		gotracing.Error("Failed to find entities from database", err)
 		return nil, 0, err
 	}
@@ -88,12 +114,30 @@ func (r *BookingRepository) SearchPreload(
 
 }
 
-func (*BookingRepository) filter(
+func (*BookingRepository) CountByCarIDAndTime(db *gorm.DB, carID int, startRent time.Time, endRent time.Time) (int64, error) {
+	var count int64
+	if err := db.Model(&entity.Booking{}).Where("car_id = ?", carID).Where("(start_rent <= ? AND end_rent >= ?) OR (start_rent >= ? AND start_rent <= ?)", startRent, startRent, startRent, endRent).Count(&count).Error; err != nil {
+		gotracing.Error("Failed to count entities from database", err)
+		return 0, err
+	}
+	return count, nil
+}
+
+func (*BookingRepository) CountByDriverIDAndTime(db *gorm.DB, driverID int, startRent time.Time, endRent time.Time) (int64, error) {
+	var count int64
+	if err := db.Model(&entity.Booking{}).Where("driver_id = ?", driverID).Where("(start_rent <= ? AND end_rent >= ?) OR (start_rent >= ? AND start_rent <= ?)", startRent, startRent, startRent, endRent).Count(&count).Error; err != nil {
+		gotracing.Error("Failed to count entities from database", err)
+		return 0, err
+	}
+	return count, nil
+}
+
+func (*BookingRepository) searchFilter(
 	customerID int,
 	carID int,
 	startRentFilter string,
 	endRentFilter string,
-	offset time.Duration,
+	location *time.Location,
 	totalCostFilter string,
 	finished *bool,
 ) func(tx *gorm.DB) *gorm.DB {
@@ -122,9 +166,9 @@ func (*BookingRepository) filter(
 				}
 			}
 
-			_startRent, err := time.Parse("2006-01-02", filterValue)
+			_startRent, err := time.ParseInLocation("2006-01-02", filterValue, location)
 			if err == nil {
-				startRent = _startRent.Add(offset)
+				startRent = _startRent
 			}
 		}
 
@@ -139,14 +183,14 @@ func (*BookingRepository) filter(
 				}
 			}
 
-			_endRent, err := time.Parse("2006-01-02", filterValue)
+			_endRent, err := time.ParseInLocation("2006-01-02", filterValue, location)
 			if err == nil {
-				endRent = _endRent.Add(offset)
+				endRent = _endRent
 			}
 		}
 
 		if !startRent.IsZero() && !endRent.IsZero() {
-			tx = tx.Where("(start_rent < ? AND end_rent >= ?) OR (start_rent >= ? AND start_rent < ?)", startRent, startRent, startRent, endRent)
+			tx = tx.Where("(start_rent <= ? AND end_rent >= ?) OR (start_rent >= ? AND start_rent <= ?)", startRent, startRent, startRent, endRent)
 		} else if !startRent.IsZero() && startRentOperator != "" {
 			tx = tx.Where("start_rent "+startRentOperator+" ?", startRent)
 		} else if !endRent.IsZero() && endRentOperator != "" {

@@ -55,7 +55,7 @@ func (r *RouteConfig) ConfigureRoutes() {
 		v2.POST("/booking", r.BookingController.CreateV2)
 		v2.GET("/booking/:id", r.BookingController.GetV2)
 		v2.GET("/bookings", r.BookingController.GetList)
-		v2.PATCH("/booking/:id", r.BookingController.Update)
+		v2.PATCH("/booking/:id", r.BookingController.UpdateV2)
 		v2.DELETE("/booking/:id", r.BookingController.Delete)
 
 		v2.POST("/booking-type", r.BookingTypeController.Create)
