@@ -43,6 +43,30 @@ func (r *BookingRepository) LoadCar(db *gorm.DB, booking *entity.Booking) error 
 	return nil
 }
 
+func (r *BookingRepository) LoadBookingType(db *gorm.DB, booking *entity.Booking) error {
+	if err := db.Where("id = ?", booking.BookingTypeID).First(&booking.BookingType).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return err
+	}
+	return nil
+}
+
+func (r *BookingRepository) LoadDriver(db *gorm.DB, booking *entity.Booking) error {
+	if err := db.Where("id = ?", booking.DriverID).First(&booking.Driver).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return err
+	}
+	return nil
+}
+
+func (r *BookingRepository) LoadDriverIncentive(db *gorm.DB, booking *entity.Booking) error {
+	if err := db.Where("booking_id = ?", booking.ID).First(&booking.DriverIncentive).Error; err != nil {
+		gotracing.Error("Failed to find entity from database", err)
+		return err
+	}
+	return nil
+}
+
 func (*BookingRepository) FindByIDPreload(db *gorm.DB, id int) (*entity.Booking, error) {
 	var entity *entity.Booking
 	if err := db.
@@ -80,7 +104,13 @@ func (r *BookingRepository) SearchPreload(
 
 	filter := r.filter(customerID, carID, startRent, endRent, offsetTime, totalCost, finished)
 
-	if err := db.Joins("Customer").Joins("Car").Scopes(filter).Offset(offset).Limit(size).Find(&bookings).Error; err != nil {
+	if err := db.
+		Joins("Customer").
+		Joins("Car").
+		Joins("BookingType").
+		Joins("Driver").
+		Joins("DriverIncentive").
+		Scopes(filter).Offset(offset).Limit(size).Find(&bookings).Error; err != nil {
 		gotracing.Error("Failed to find entities from database", err)
 		return nil, 0, err
 	}

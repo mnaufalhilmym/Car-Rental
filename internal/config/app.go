@@ -21,8 +21,8 @@ func Bootstrap(conf BootstrapConfig) {
 	carRepository := repository.NewCarRepository(conf.DB)
 	bookingTypeRepository := repository.NewBookingTypeRepository(conf.DB)
 	driverRepository := repository.NewDriverRepository(conf.DB)
-	bookingRepository := repository.NewBookingRepository(conf.DB)
 	driverIncentiveRepository := repository.NewDriverIncentiveRepository(conf.DB)
+	bookingRepository := repository.NewBookingRepository(conf.DB)
 
 	// Usecase
 	membershipUsecase := usecase.NewMembershipUsecase(conf.DB, membershipRepository)
