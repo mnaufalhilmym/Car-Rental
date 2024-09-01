@@ -2326,7 +2326,8 @@ ALTER SEQUENCE public.customers_id_seq OWNED BY public.customers.id;
 CREATE TABLE public.driver_incentives (
     id bigint NOT NULL,
     booking_id bigint,
-    incentive numeric
+    incentive numeric,
+    deleted_at timestamp with time zone
 );
 
 
@@ -2362,7 +2363,8 @@ CREATE TABLE public.drivers (
     name text,
     nik text,
     phone_number text,
-    daily_cost numeric
+    daily_cost numeric,
+    deleted_at timestamp with time zone
 );
 
 
@@ -2977,10 +2979,10 @@ COPY public.customers (id, name, nik, phone_number, membership_id, deleted_at) F
 -- Data for Name: driver_incentives; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.driver_incentives (id, booking_id, incentive) FROM stdin;
-1	6	40000
-2	7	75000
-3	8	25000
+COPY public.driver_incentives (id, booking_id, incentive, deleted_at) FROM stdin;
+1	6	40000	\N
+2	7	75000	\N
+3	8	25000	\N
 \.
 
 
@@ -2988,14 +2990,14 @@ COPY public.driver_incentives (id, booking_id, incentive) FROM stdin;
 -- Data for Name: drivers; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.drivers (id, name, nik, phone_number, daily_cost) FROM stdin;
-1	Stanley Baxter	3220132938273	081992048712	150000
-2	Halsey Quinn	3220132938293	081992048713	135000
-3	Kingsley Alvarez	3220132938313	081992048714	150000
-4	Cecilia Flowers	3220132938330	081992048715	155000
-5	Clarissa Brown	3220132938351	081992048716	145000
-6	Zeph Larson	3220132938372	081992048717	130000
-7	Zach Reynolds	3220132938375	081992048718	140000
+COPY public.drivers (id, name, nik, phone_number, daily_cost, deleted_at) FROM stdin;
+1	Stanley Baxter	3220132938273	081992048712	150000	\N
+2	Halsey Quinn	3220132938293	081992048713	135000	\N
+3	Kingsley Alvarez	3220132938313	081992048714	150000	\N
+4	Cecilia Flowers	3220132938330	081992048715	155000	\N
+5	Clarissa Brown	3220132938351	081992048716	145000	\N
+6	Zeph Larson	3220132938372	081992048717	130000	\N
+7	Zach Reynolds	3220132938375	081992048718	140000	\N
 \.
 
 
