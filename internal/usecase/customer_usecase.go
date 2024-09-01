@@ -43,10 +43,22 @@ func (uc *CustomerUsecase) Create(ctx context.Context, request *model.CreateCust
 		return nil, apperror.BadRequest(fmt.Errorf(`customer with NIK "%s" or phone number "%s" already exists`, request.NIK, request.PhoneNumber))
 	}
 
+	var membership *entity.Membership
+	if request.MembershipID != nil {
+		_membership, err := uc.membershipRepository.FindByID(tx, *request.MembershipID)
+		if err != nil {
+			return nil, err
+		}
+		membership = _membership
+	}
+
 	customer := &entity.Customer{
-		Name:        request.Name,
-		NIK:         request.NIK,
-		PhoneNumber: request.PhoneNumber,
+		Name:         request.Name,
+		NIK:          request.NIK,
+		PhoneNumber:  request.PhoneNumber,
+		MembershipID: request.MembershipID,
+
+		Membership: membership,
 	}
 
 	if err := uc.repository.Create(tx, customer); err != nil {
