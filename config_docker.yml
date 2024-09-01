@@ -1,11 +1,11 @@
 app:
-  mode: debug # debug, release, or test
+  mode: release # debug, release, or test
 
 web:
   address: :8080
 
 log:
-  print_level: DEBUG # TRACE, DEBUG, INFO, WARN, ERROR, OFF
+  print_level: INFO # TRACE, DEBUG, INFO, WARN, ERROR, OFF
   stacktrace_level: ERROR # TRACE, DEBUG, INFO, WARN, ERROR, OFF
   max_pc: 10 # maximum stacktrace program counter
 
