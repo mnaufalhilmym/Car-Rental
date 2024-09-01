@@ -14,10 +14,14 @@ services:
     container_name: car-rental
     image: docker.io/mnaufalhilmym/car-rental
     restart: always
+    networks:
+      - carrental-network
     ports:
       - 8080:8080
     volumes:
-      - ./config.yml:/config.yml
+      - ./config_docker.yml:/config.yml
+    depends_on:
+      - postgres
 
 networks:
   carrental-network:
