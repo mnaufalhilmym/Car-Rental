@@ -1,0 +1,24 @@
+app:
+  mode: debug # debug, release, or test
+
+web:
+  address: :8080
+
+log:
+  print_level: DEBUG # TRACE, DEBUG, INFO, WARN, ERROR, OFF
+  stacktrace_level: ERROR # TRACE, DEBUG, INFO, WARN, ERROR, OFF
+  max_pc: 10 # maximum stacktrace program counter
+
+db:
+  host: aws-0-ap-southeast-1.pooler.supabase.com
+  port: 6543
+  user: postgres.kvtxuidnisrihhttvgbi
+  password: VPF706DOc7RBAMCr
+  name: postgres
+  pool:
+    idle: 10
+    max: 100
+    lifetime: 300
+
+validator:
+  phone_number: "^08[0-9]{8,11}$"
