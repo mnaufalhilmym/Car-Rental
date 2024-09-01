@@ -134,6 +134,28 @@ func (c *BookingController) Update(ctx *gin.Context) {
 	model.ResponseOK(ctx, response)
 }
 
+func (c *BookingController) UpdateV2(ctx *gin.Context) {
+	request := new(model.UpdateBookingRequestV2)
+	if err := ctx.ShouldBindUri(request); err != nil {
+		gotracing.Error("Failed to parse request", err)
+		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
+		return
+	}
+	if err := ctx.ShouldBindJSON(request); err != nil {
+		gotracing.Error("Failed to parse request", err)
+		model.ResponseError(ctx, apperror.BadRequest(errors.New("failed to parse request")))
+		return
+	}
+
+	response, err := c.usecase.UpdateV2(ctx.Request.Context(), request)
+	if err != nil {
+		model.ResponseError(ctx, err)
+		return
+	}
+
+	model.ResponseOK(ctx, response)
+}
+
 func (c *BookingController) Delete(ctx *gin.Context) {
 	request := new(model.DeleteBookingRequest)
 	if err := ctx.ShouldBindUri(request); err != nil {

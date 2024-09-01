@@ -13,16 +13,20 @@ The Car Rental API is developed in two versions:
 
 - Clone the repository:
 
-```bash
-git clone https://github.com/mnaufalhilmym/Car-Rental.git
-cd Car-Rental
-```
+  ```bash
+  git clone https://github.com/mnaufalhilmym/Car-Rental.git
+  cd Car-Rental
+  ```
 
 - Install the dependencies:
 
-```bash
-go mod tidy
-```
+  ```bash
+  go mod tidy
+  ```
+
+- Optionally, you can import this Supabase database (based on PostgreSQL):
+
+  [Database Dump](./docs/car_rental_supabase_dump.sql)
 
 ## Running The Application
 
@@ -30,23 +34,29 @@ go mod tidy
 
 - Run the application
 
-```bash
-go run ./cmd
-```
+  ```bash
+  go run ./cmd
+  ```
 
 ## Build and Running with Docker
+
 - Build the Docker image:
-```bash
-docker build . -f Dockerfile -t docker.io/mnaufalhilmym/car-rental
-```
+
+  ```bash
+  docker build . -f Dockerfile -t docker.io/mnaufalhilmym/car-rental
+  ```
+
 - Run the Docker container:
-```bash
-docker run -p 8080:8080 --name car-rental -v $(pwd)/config.yml:/config.yml docker.io/mnaufalhilmym/car-rental
-```
+
+  ```bash
+  docker run -p 8080:8080 --name car-rental -v $(pwd)/config.yml:/config.yml docker.io/mnaufalhilmym/car-rental
+  ```
+
 - Run with Docker Compose:
-```bash
-docker-compose -f compose.yml up
-```
+
+  ```bash
+  docker-compose -f compose.yml up
+  ```
 
 ## API Documentation
 

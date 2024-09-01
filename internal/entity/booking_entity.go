@@ -20,11 +20,10 @@ type Booking struct {
 	TotalDriverCost float64        `gorm:"column:total_driver_cost"`
 	DeletedAt       gorm.DeletedAt `gorm:"column:deleted_at"`
 
-	Customer        Customer         `gorm:"foreignKey:customer_id;references:id"`
-	Car             Car              `gorm:"foreignKey:car_id;references:id"`
-	BookingType     *BookingType     `gorm:"foreignKey:booking_type_id;references:id"`
-	Driver          *Driver          `gorm:"foreignKey:driver_id;references:id"`
-	DriverIncentive *DriverIncentive `gorm:"foreignKey:id;references:booking_id"`
+	Customer    Customer     `gorm:"foreignKey:customer_id;references:id"`
+	Car         Car          `gorm:"foreignKey:car_id;references:id"`
+	BookingType *BookingType `gorm:"foreignKey:booking_type_id;references:id"`
+	Driver      *Driver      `gorm:"foreignKey:driver_id;references:id"`
 }
 
 func (*Booking) TableName() string {

@@ -50,7 +50,7 @@ type BookingResponseV2 struct {
 	DriverIncentive *DriverIncentiveResponse `json:"driver_incentive"`
 }
 
-func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
+func ToBookingResponseV2(booking *entity.Booking, driverIncentive *entity.DriverIncentive) *BookingResponseV2 {
 	return &BookingResponseV2{
 		ID:        booking.ID,
 		Customer:  *ToCustomerResponse(&booking.Customer),
@@ -74,8 +74,8 @@ func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
 		}(),
 		TotalDriverCost: booking.TotalDriverCost,
 		DriverIncentive: func() *DriverIncentiveResponse {
-			if booking.DriverIncentive != nil {
-				return ToDriverIncentiveResponse(booking.DriverIncentive)
+			if driverIncentive != nil {
+				return ToDriverIncentiveResponse(driverIncentive)
 			}
 			return nil
 		}(),
@@ -85,7 +85,7 @@ func ToBookingResponseV2(booking *entity.Booking) *BookingResponseV2 {
 func ToBookingsResponseV2(bookings []entity.Booking) []BookingResponseV2 {
 	response := make([]BookingResponseV2, len(bookings))
 	for i, booking := range bookings {
-		response[i] = *ToBookingResponseV2(&booking)
+		response[i] = *ToBookingResponseV2(&booking, nil)
 	}
 	return response
 }

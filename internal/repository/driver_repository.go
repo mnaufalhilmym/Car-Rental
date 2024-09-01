@@ -26,7 +26,7 @@ func NewDriverRepository(db *gorm.DB) *DriverRepository {
 	return &DriverRepository{}
 }
 
-func (r *DriverRepository) CheckIfNIKOrPhoneNumberExists(db *gorm.DB, nik string, phoneNumber string) (bool, error) {
+func (*DriverRepository) CheckIfNIKOrPhoneNumberExists(db *gorm.DB, nik string, phoneNumber string) (bool, error) {
 	var count int64
 	if err := db.Model(&entity.Driver{}).Where("nik = ? OR phone_number = ?", nik, phoneNumber).Count(&count).Error; err != nil {
 		gotracing.Error("Failed to find entity from database", err)
